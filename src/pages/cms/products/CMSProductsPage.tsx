@@ -1,7 +1,8 @@
 import { useProductsService } from '@/services/products';
 import { useEffect } from 'react';
 import { ServerError, Spinner } from '@/shared/';
-import clsx from 'clsx';
+import { CMSProductsList } from './components/CMSProductsList';
+import { CMSProductForm } from './components/CMSProductForm';
 
 export function CMSProductsPage() {
   const {state, actions} = useProductsService()
@@ -18,55 +19,24 @@ export function CMSProductsPage() {
     {state.pending && <Spinner />}
     {state.error && <ServerError message={state.error} />}
 
-    <div className="mt-12">
-      <table className="table-auto w-full hover">
-        <thead>
-            <tr>
-              <th className="text-left">PRODUCTS</th>
-              <th className="text-left">IMAGE</th>
-              <th>COST</th>
-              <th>DELETE</th>
-            </tr>
-        </thead>
+    <CMSProductForm
+    activeItem={state.activeItem}
+    onClose={actions.resetActiveItem}
+    onAdd={(item)=> actions.addProduct(item)}
+    onEdit={(item)=> actions.editProduct(item)}
+    />
 
-        <tbody>
+    <CMSProductsList
+    items={state.products}
+    activeItem={state.activeItem}
+    onEditItem={actions.setActiveItem}
+    onDeleteItem={actions.deleteProduct}
+    />
 
-        {  
-        state.products.map(item =>{
-          return(
-          <tr 
-          key={item.id}
-          className={clsx(
-            'cursor-pointer', 
-            {'bg-sky-200 text-black': item.id === state.activeItem?.id}
-            )}
-          onClick={() => {
-            actions.setActiveItem(item)
-          }}
-          >
-              <td>{item.name}</td>
-              <td>
-                {item.tmb && <img src={item.tmb} alt={item.name} className="h-16 rounded-xl"/>}
-              </td>
-              <td className="text-center">{item.cost}</td>
-              <td className="text-center">
-              <i
-                className="fa fa-trash"
-                onClick={(event) => {
-                event.stopPropagation()
-                actions.deleteProduct(item.id)
-                }}
-              />
-              </td>
-          </tr>
+    <button className='btn primary' onClick={()=> actions.setActiveItem({})}>
+      ADD NEW
+    </button>
 
-          )
-        })
-
-        }
-        </tbody>
-      </table>
-    </div>
   </div>
   )
 }
